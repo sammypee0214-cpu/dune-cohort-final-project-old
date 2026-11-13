@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ car }}{% endblock %}
+
+{% block content %}
+<h1>Delete car</h1>
+
+<div class="panel form-panel">
+  <p>Are you sure you want to delete <strong>{{ car }}</strong>?
+     This also removes its {{ car.service_records.count }} service record{{ car.service_records.count|pluralize }}
+     and cannot be undone.</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="actions">
+      <button type="submit" class="btn btn-danger">Yes, delete</button>
+      <a class="btn btn-secondary" href="{{ car.get_absolute_url }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

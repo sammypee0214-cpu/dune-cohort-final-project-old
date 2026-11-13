@@ -1,0 +1,52 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Dune Garage{% endblock %} | Dune Garage</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="container nav">
+      <a class="brand" href="{% url 'inventory:car_list' %}">Dune Garage</a>
+      <ul class="nav-links">
+        <li><a href="{% url 'inventory:car_list' %}">Cars</a></li>
+        <li><a href="{% url 'inventory:manufacturer_list' %}">Manufacturers</a></li>
+        {% if request.user.is_authenticated %}
+          <li><a href="{% url 'inventory:car_create' %}">Add car</a></li>
+          {% if request.user.is_staff %}
+            <li><a href="{% url 'admin:index' %}">Admin</a></li>
+          {% endif %}
+          <li class="nav-user">Signed in as {{ request.user.username }}</li>
+          <li>
+            <form method="post" action="{% url 'accounts:logout' %}" class="inline-form">
+              {% csrf_token %}
+              <button type="submit" class="link-button">Log out</button>
+            </form>
+          </li>
+        {% else %}
+          <li><a href="{% url 'accounts:login' %}">Log in</a></li>
+          <li><a href="{% url 'accounts:register' %}">Register</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="message {{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">Dune Cohort Final Project &middot; Built with Django</div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}{{ car }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>{{ car }}</h1>
+  <a class="btn btn-secondary" href="{% url 'inventory:car_list' %}">&larr; Back to cars</a>
+</div>
+
+<div class="detail-layout">
+  <div class="panel">
+    {% if car.image %}
+      <img class="detail-image" src="{{ car.image.url }}" alt="{{ car }}">
+    {% else %}
+      <div class="card-placeholder">No photo uploaded</div>
+    {% endif %}
+    {% if car.description %}
+      <div>{{ car.description|linebreaks }}</div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <ul class="spec-list">
+      <li><span>Manufacturer</span>
+        <a href="{% url 'inventory:manufacturer_detail' car.manufacturer.pk %}">{{ car.manufacturer.name }}</a></li>
+      <li><span>Model</span><strong>{{ car.model_name }}</strong></li>
+      <li><span>Year</span><strong>{{ car.year }}</strong></li>
+      <li><span>Colour</span><strong>{{ car.color }}</strong></li>
+      <li><span>Mileage</span><strong>{{ car.mileage|floatformat:0 }} km</strong></li>
+      <li><span>Price</span><strong class="price">${{ car.price|floatformat:2 }}</strong></li>
+      <li><span>Owner</span><strong>{{ car.owner.full_name|default:"Unassigned" }}</strong></li>
+      <li><span>Listed</span><strong>{{ car.created_at|date:"M d, Y" }}</strong></li>
+    </ul>
+
+    {% if request.user.is_authenticated %}
+      <div class="actions">
+        <a class="btn" href="{% url 'inventory:car_update' car.pk %}">Edit</a>
+        <a class="btn btn-secondary" href="{% url 'inventory:service_record_create' car.pk %}">Add service record</a>
+        {% if request.user.is_staff %}
+          <a class="btn btn-danger" href="{% url 'inventory:car_delete' car.pk %}">Delete</a>
+        {% endif %}
+      </div>
+    {% else %}
+      <p class="muted"><a href="{% url 'accounts:login' %}?next={{ request.path }}">Log in</a> to edit this car.</p>
+    {% endif %}
+  </div>
+</div>
+
+<section class="panel">
+  <h2>Service history</h2>
+  {% if car.service_records.all %}
+    <table>
+      <thead><tr><th>#</th><th>Date</th><th>Work done</th><th>Cost</th></tr></thead>
+      <tbody>
+        {% for record in car.service_records.all %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ record.service_date|date:"M d, Y" }}</td>
+            <td>{{ record.description }}</td>
+            <td>${{ record.cost|floatformat:2 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No service records yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Cars{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Car inventory</h1>
+  {% if request.user.is_authenticated %}
+    <a class="btn" href="{% url 'inventory:car_create' %}">+ Add car</a>
+  {% endif %}
+</div>
+
+<form method="get" class="filter-bar">
+  <input type="search" name="q" value="{{ query }}" placeholder="Search by model or manufacturer">
+  <select name="manufacturer">
+    <option value="">All manufacturers</option>
+    {% for maker in manufacturers %}
+      <option value="{{ maker.pk }}" {% if maker.pk|stringformat:"s" == selected_maker %}selected{% endif %}>{{ maker.name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn">Filter</button>
+  {% if query or selected_maker %}
+    <a class="btn btn-secondary" href="{% url 'inventory:car_list' %}">Clear</a>
+  {% endif %}
+</form>
+
+<p class="muted">{{ cars|length }} car{{ cars|length|pluralize }} found</p>
+
+<div class="grid">
+  {% for car in cars %}
+    <article class="card">
+      {% if car.image %}
+        <img class="card-image" src="{{ car.image.url }}" alt="{{ car }}">
+      {% else %}
+        <div class="card-placeholder">No photo</div>
+      {% endif %}
+      <div class="card-body">
+        <h3><a href="{{ car.get_absolute_url }}">{{ car }}</a></h3>
+        <span class="price">${{ car.price|floatformat:2 }}</span>
+        <span class="muted">{{ car.color }} &middot; {{ car.mileage|floatformat:0 }} km</span>
+        <span class="muted">Owner: {{ car.owner.full_name|default:"Unassigned" }}</span>
+      </div>
+    </article>
+  {% empty %}
+    <p class="empty">No cars match your search yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

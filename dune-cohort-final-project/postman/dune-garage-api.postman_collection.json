@@ -1,0 +1,99 @@
+{
+  "info": {
+    "name": "Dune Garage API",
+    "description": "Tests for the Dune Garage car REST API. Run in order. Set base_url, username, password and manufacturer_id collection variables first (manufacturer_id must be an existing manufacturer; seed_demo creates some).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "https://YOUR-APP.onrender.com" },
+    { "key": "username", "value": "your-username" },
+    { "key": "password", "value": "your-password" },
+    { "key": "manufacturer_id", "value": "1" },
+    { "key": "car_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. GET list of cars (public) - 200",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+        "pm.test('Body is an array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+      ] } }],
+      "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/api/cars/", "host": ["{{base_url}}"], "path": ["api", "cars", ""] } }
+    },
+    {
+      "name": "2. POST create car without auth - 401",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Unauthenticated write rejected with 401', () => pm.response.to.have.status(401));"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"manufacturer\": {{manufacturer_id}},\n  \"model_name\": \"Postman Test\",\n  \"year\": 2022,\n  \"color\": \"Green\",\n  \"price\": \"12000.00\",\n  \"mileage\": 100\n}" },
+        "url": { "raw": "{{base_url}}/api/cars/", "host": ["{{base_url}}"], "path": ["api", "cars", ""] }
+      }
+    },
+    {
+      "name": "3. POST create car (Basic auth) - 201",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+        "const body = pm.response.json();",
+        "pm.test('Response has id', () => pm.expect(body.id).to.exist);",
+        "pm.collectionVariables.set('car_id', body.id);"
+      ] } }],
+      "request": {
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "{{username}}", "type": "string" }, { "key": "password", "value": "{{password}}", "type": "string" }] },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"manufacturer\": {{manufacturer_id}},\n  \"model_name\": \"Postman Test\",\n  \"year\": 2022,\n  \"color\": \"Green\",\n  \"price\": \"12000.00\",\n  \"mileage\": 100,\n  \"description\": \"Created from Postman\"\n}" },
+        "url": { "raw": "{{base_url}}/api/cars/", "host": ["{{base_url}}"], "path": ["api", "cars", ""] }
+      }
+    },
+    {
+      "name": "4. POST invalid data - 400",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+      ] } }],
+      "request": {
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "{{username}}", "type": "string" }, { "key": "password", "value": "{{password}}", "type": "string" }] },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"model_name\": \"Missing required fields\"\n}" },
+        "url": { "raw": "{{base_url}}/api/cars/", "host": ["{{base_url}}"], "path": ["api", "cars", ""] }
+      }
+    },
+    {
+      "name": "5. GET car detail - 200",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+        "pm.test('Returns the created car', () => pm.expect(pm.response.json().model_name).to.eql('Postman Test'));"
+      ] } }],
+      "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/api/cars/{{car_id}}/", "host": ["{{base_url}}"], "path": ["api", "cars", "{{car_id}}", ""] } }
+    },
+    {
+      "name": "6. DELETE car without auth - 401",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Unauthenticated delete rejected', () => pm.response.to.have.status(401));"
+      ] } }],
+      "request": { "method": "DELETE", "header": [], "url": { "raw": "{{base_url}}/api/cars/{{car_id}}/", "host": ["{{base_url}}"], "path": ["api", "cars", "{{car_id}}", ""] } }
+    },
+    {
+      "name": "7. DELETE car (Basic auth) - 204",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 204', () => pm.response.to.have.status(204));"
+      ] } }],
+      "request": {
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "{{username}}", "type": "string" }, { "key": "password", "value": "{{password}}", "type": "string" }] },
+        "method": "DELETE",
+        "header": [],
+        "url": { "raw": "{{base_url}}/api/cars/{{car_id}}/", "host": ["{{base_url}}"], "path": ["api", "cars", "{{car_id}}", ""] }
+      }
+    },
+    {
+      "name": "8. GET deleted car - 404",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+      ] } }],
+      "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/api/cars/{{car_id}}/", "host": ["{{base_url}}"], "path": ["api", "cars", "{{car_id}}", ""] } }
+    }
+  ]
+}

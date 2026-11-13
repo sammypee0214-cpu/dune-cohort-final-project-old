@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Manufacturers{% endblock %}
+
+{% block content %}
+<h1>Manufacturers</h1>
+
+<div class="panel">
+  {% if manufacturers %}
+    <table>
+      <thead><tr><th>Name</th><th>Country</th><th>Founded</th><th>Cars</th></tr></thead>
+      <tbody>
+        {% for maker in manufacturers %}
+          <tr>
+            <td><a href="{% url 'inventory:manufacturer_detail' maker.pk %}">{{ maker.name }}</a></td>
+            <td>{{ maker.country }}</td>
+            <td>{{ maker.founded_year|default:"-" }}</td>
+            <td>{{ maker.car_count }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="empty">No manufacturers yet. Add some in the admin site.</p>
+  {% endif %}
+</div>
+{% endblock %}
